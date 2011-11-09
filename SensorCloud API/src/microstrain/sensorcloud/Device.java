@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 import microstrain.sensorcloud.exception.*;
 import microstrain.sensorcloud.xdr.XDROutStream;
@@ -279,23 +282,42 @@ public class Device {
 	 * @return SensorCloud exception
 	 */
 	private InvalidRequestException parseException (SCHTTPException e, List <String> params) {
+		String message = e.getMessage();
+		
+		Pattern pattern = Pattern.compile( "\\d{3}-\\d{3}" );
+		Matcher m = pattern.matcher(message);
+		
+		if (m.find()) {
+			System.out.println(message);
+			String code = m.group();
+			String [] codes = code.split("-");
+			int x = Integer.parseInt( codes[0] );
+			int y = Integer.parseInt( codes[1] );
+			
+			switch (x) {
+			case 400:
+				switch (y) {
+				case 9:
+					return new SensorContainsChannelsException( params.get(0) );
+				}
+			}
+		}
+		
 		switch (e.getStatusCode()) {
 		case 400:
-			String message = e.getMessage();
-			if (message.contains( "attribute" )) {
+			
+			if (e.getMessage().contains( "attribute" )) {
 				return new AttributeAlreadyExistsException( params.get(0) );
 			} else if (message.contains( "Version" )) {
 				throw new VersionNotSupportedException("Please update your API");
-			} else if (message.contains( "Sensor " )){
-				return new SensorAlreadyExistsException( params.get(0) );
 			} else {
-				return new SensorContainsChannelsException( params.get(0) );
+				return new SensorAlreadyExistsException( params.get(0) );
 			}
-			//break;
+
 		case 404:
-			if (e.getMessage().contains( "attributes" )) {
+			if (e.getMessage().contains( "attribute" )) {
 				return new AttributeNotFoundException( params.get(0) );
-			} else if ( e.getMessage().contains( "Not Found" )) {
+			} else if ( e.getMessage().contains( "sensor" )) {
 				return new SensorDoesNotExistException( params.get(0) );
 			}
 		}

@@ -442,20 +442,20 @@ public class Sensor {
 	 */
 	private InvalidRequestException parseException (SCHTTPException e, List <String> params) {
 		switch (e.getStatusCode()) {
-		case 400:
+		case 400:			
 			String message = e.getMessage();
 			if (message.contains( "attribute" )) {
 				return new AttributeAlreadyExistsException( params.get(0) );
 			} else if (message.contains( "Version" )) {
 				throw new VersionNotSupportedException("Please update your API");
-			} else if (message.contains( "Channel " )){
+			} else if (message.contains( "channel " )){
 				return new ChannelAlreadyExistsException( params.get(0) );
 			}
 			break;
 		case 404:
-			if (e.getMessage().contains( "attributes" )) {
+			if (e.getMessage().contains( "attribute" )) {
 				return new AttributeNotFoundException( params.get(0) );
-			} else if ( e.getMessage().contains( "DNE" )) {
+			} else if ( e.getMessage().contains( "channel" )) {
 				return new ChannelDoesNotExistException( name );
 			} else if ( e.getMessage().contains( "sensor" )) {
 				return new SensorDoesNotExistException(name);

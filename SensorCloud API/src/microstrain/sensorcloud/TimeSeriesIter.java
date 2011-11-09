@@ -63,7 +63,7 @@ public class TimeSeriesIter implements Iterator<SampledPoint> {
 		
 		try {
 			points = SampledPoint.getInstanceOfAll( requester.get(url, params) );
-		} catch (SCHTTPException e) {
+		} catch (SCHTTPException e) {			
 			switch (e.getStatusCode()) {
 			case 404:
 				if (samplerate == null) {

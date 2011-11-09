@@ -276,7 +276,7 @@ public class Channel {
 			}
 			break;
 		case 404:
-			if (e.getMessage().contains( "attributes" )) {
+			if (e.getMessage().contains( "attribute" )) {
 				return new AttributeNotFoundException( params.get(0) );
 			} else if ( e.getMessage().contains( "channel" )) {
 				return new ChannelDoesNotExistException( name );

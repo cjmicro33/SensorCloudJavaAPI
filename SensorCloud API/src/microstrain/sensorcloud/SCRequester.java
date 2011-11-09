@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -40,7 +41,10 @@ public class SCRequester implements Requester{
 		this.authServer = authServer;
 		unAuth = new Semaphore(1000);
 		authenticate(authToken);
-	}
+		
+		System.setProperty( "https.proxyHost", "localhost" );
+		System.setProperty( "https.proxyPort", "8888");
+		}
 
 	@Override
 	public String getSerial() {
@@ -138,7 +142,7 @@ public class SCRequester implements Requester{
 		HttpURLConnection conn = null;
 		try {
 			// Open up a connection to the URL and prepare a buffered reader to read data back
-			conn = (HttpURLConnection) urlObj.openConnection();
+			 conn = (HttpURLConnection) urlObj.openConnection();
 			conn.setDoInput(true);
 			conn.setRequestProperty( "Accept", "application/xdr");
 			
@@ -163,7 +167,7 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					return get(url);
 				} else {
-					throw new SCHTTPException( conn.getResponseCode(), conn.getResponseMessage() );
+					throw new SCHTTPException( conn.getResponseCode(), conn.getResponseMessage() + buffer.toString() );
 				}
 			}
 			
@@ -176,7 +180,21 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					return get(url);
 				} else {
-					throw new SCHTTPException(conn.getResponseCode(), conn.getResponseMessage() + "\n" + e.getMessage());
+					InputStream in = conn.getErrorStream();
+					InputStreamReader reader = new InputStreamReader(in);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+					byte [] buf = new byte [1024]; // buffer for reading in from server			
+					int read; // bytes read
+					
+					// write bytes from input stream to buffer until stream is empty
+					while ((read = in.read(buf, 0, buf.length)) != -1) {
+						buffer.write(buf, 0, read);
+						long time = System.currentTimeMillis();
+						while (System.currentTimeMillis() < time + 100) {}
+					}
+					
+					throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );//conn.getResponseMessage() + "\n" + e.getMessage());
 				}
 			} else {
 				throw e; // exception is not a sensorcloud exception
@@ -223,7 +241,21 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					post(url,data);
 				} else {
-					throw new SCHTTPException( resp, conn.getResponseMessage() + "/n");
+					InputStream in = conn.getErrorStream();
+					InputStreamReader reader = new InputStreamReader(in);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+					byte [] buf = new byte [1024]; // buffer for reading in from server			
+					int read; // bytes read
+					
+					// write bytes from input stream to buffer until stream is empty
+					while ((read = in.read(buf, 0, buf.length)) != -1) {
+						buffer.write(buf, 0, read);
+						long time = System.currentTimeMillis();
+						while (System.currentTimeMillis() < time + 100) {}
+					}
+					
+					throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );
 				}
 			}
 		} catch (IOException e) {
@@ -232,7 +264,21 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					post(url, data);
 				} else {
-					throw new SCHTTPException(conn.getResponseCode(), e.getMessage());
+					InputStream in = conn.getErrorStream();
+					InputStreamReader reader = new InputStreamReader(in);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+					byte [] buf = new byte [1024]; // buffer for reading in from server			
+					int read; // bytes read
+					
+					// write bytes from input stream to buffer until stream is empty
+					while ((read = in.read(buf, 0, buf.length)) != -1) {
+						buffer.write(buf, 0, read);
+						long time = System.currentTimeMillis();
+						while (System.currentTimeMillis() < time + 100) {}
+					}
+					
+					throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );
 				}
 			} else {
 				throw e;
@@ -281,7 +327,24 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					put(url,data);
 				} else {
-					throw new SCHTTPException( resp, conn.getResponseMessage() );
+					InputStream in = conn.getErrorStream();
+					if (in != null) {
+						InputStreamReader reader = new InputStreamReader(in);
+						ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	
+						byte [] buf = new byte [1024]; // buffer for reading in from server			
+						int read; // bytes read
+						
+						// write bytes from input stream to buffer until stream is empty
+						while ((read = in.read(buf, 0, buf.length)) != -1) {
+							buffer.write(buf, 0, read);
+							long time = System.currentTimeMillis();
+							while (System.currentTimeMillis() < time + 100) {}
+						}
+						
+						throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );
+					}
+					throw new SCHTTPException( conn.getResponseCode(), conn.getResponseMessage() );
 				}
 			}
 			
@@ -291,7 +354,21 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					put(url, data);
 				} else {
-					throw new SCHTTPException(conn.getResponseCode(), e.getMessage());
+					InputStream in = conn.getErrorStream();
+					InputStreamReader reader = new InputStreamReader(in);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+					byte [] buf = new byte [1024]; // buffer for reading in from server			
+					int read; // bytes read
+					
+					// write bytes from input stream to buffer until stream is empty
+					while ((read = in.read(buf, 0, buf.length)) != -1) {
+						buffer.write(buf, 0, read);
+						long time = System.currentTimeMillis();
+						while (System.currentTimeMillis() < time + 100) {}
+					}
+					
+					throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );
 				}
 			} else {
 				throw e;
@@ -333,7 +410,21 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					delete(url);
 				} else {
-					throw new SCHTTPException( conn.getResponseCode(), conn.getResponseMessage());
+					InputStream in = conn.getErrorStream();
+					InputStreamReader reader = new InputStreamReader(in);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+					byte [] buf = new byte [1024]; // buffer for reading in from server			
+					int read; // bytes read
+					
+					// write bytes from input stream to buffer until stream is empty
+					while ((read = in.read(buf, 0, buf.length)) != -1) {
+						buffer.write(buf, 0, read);
+						long time = System.currentTimeMillis();
+						while (System.currentTimeMillis() < time + 100) {}
+					}
+					
+					throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );
 				}
 			}
 		} catch (IOException e) {
@@ -342,7 +433,21 @@ public class SCRequester implements Requester{
 					authenticate(this.authToken);
 					delete(url);
 				} else {
-					throw new SCHTTPException(conn.getResponseCode(), e.getMessage() + "\n" + conn.getResponseMessage());
+					InputStream in = conn.getErrorStream();
+					InputStreamReader reader = new InputStreamReader(in);
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+					byte [] buf = new byte [1024]; // buffer for reading in from server			
+					int read; // bytes read
+					
+					// write bytes from input stream to buffer until stream is empty
+					while ((read = in.read(buf, 0, buf.length)) != -1) {
+						buffer.write(buf, 0, read);
+						long time = System.currentTimeMillis();
+						while (System.currentTimeMillis() < time + 100) {}
+					}
+					
+					throw new SCHTTPException(conn.getResponseCode(), buffer.toString() );
 				}
 			} else {
 				throw e;
