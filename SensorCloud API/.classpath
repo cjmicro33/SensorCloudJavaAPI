@@ -6,5 +6,11 @@
 	<classpathentry kind="lib" path="C:/Users/c_cavanaugh/Desktop/Transfer/c_cavanaugh/My Documents/Downloads/mockito-all-1.9.0-rc1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/c_cavanaugh/Desktop/Transfer/c_cavanaugh/workspace/dev_corner/SensorCloud API/RXTXcomm.jar"/>
 	<classpathentry kind="lib" path="C:/Users/c_cavanaugh/Desktop/Transfer/c_cavanaugh/My Documents/Downloads/javasysmon-0.3.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/c_cavanaugh/Downloads/json-lib-2.4-jdk15.jar" sourcepath="C:/Users/c_cavanaugh/Downloads/json-lib-2.4-jdk15-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/C:/Users/c_cavanaugh/Downloads/json-lib-2.4-jdk15-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/c_cavanaugh/Downloads/commons-lang-2.6-bin/commons-lang-2.6/commons-lang-2.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

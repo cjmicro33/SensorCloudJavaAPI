@@ -11,6 +11,9 @@ import microstrain.sensorcloud.exception.EndTimeBeforeStartTimeException;
 import microstrain.sensorcloud.exception.InvalidRequestException;
 import microstrain.sensorcloud.exception.InvalidUserInputException;
 import microstrain.sensorcloud.exception.SCHTTPException;
+import microstrain.sensorcloud.exception.SensorContainsChannelsException;
+import microstrain.sensorcloud.json.JSONException;
+import microstrain.sensorcloud.json.JSONObject;
 
 /**
  * An iterator for iterating over data from a <b>TimeSeriesStream</b>
@@ -38,19 +41,21 @@ public class TimeSeriesIter implements Iterator<SampledPoint> {
 	 * @throws InvalidUserInputException
 	 * @throws InvalidRequestException
 	 */
-	public TimeSeriesIter (long startTime, long endTime, SampleRate samplerate, String channelName, String sensorName, Requester requester) throws IOException, InvalidUserInputException, InvalidRequestException {
+	protected TimeSeriesIter (long startTime, long endTime, SampleRate samplerate, String channelName, String sensorName, Requester requester) throws IOException, InvalidUserInputException, InvalidRequestException {
 		String url = "sensors/" + sensorName + "/channels/" + channelName + "/streams/timeseries/data/";
 		Map <String, String> params = new TreeMap<String, String>();
 		
 		if (startTime > endTime) {
 			throw new EndTimeBeforeStartTimeException(startTime, endTime);
 		}else if (startTime < 0) {
+			startTime = 0;
 			params.put( "starttime", "0" );
 		} else {
 			params.put( "starttime", Long.toString(startTime) );
 		}
 		
 		if (endTime < 0) {
+			endTime = Long.MAX_VALUE;
 			params.put( "endtime", Long.toString( Long.MAX_VALUE ) );
 		} else {
 			params.put( "endtime", Long.toString(endTime) );
@@ -64,7 +69,30 @@ public class TimeSeriesIter implements Iterator<SampledPoint> {
 		try {
 			points = SampledPoint.getInstanceOfAll( requester.get(url, params) );
 		} catch (SCHTTPException e) {			
+			
+			try {
+				JSONObject json = new JSONObject( e.getMessage() );
+				
+				if (json.has( "errorcode" )) {
+					String code = json.getString( "errorcode" );
+					String [] codes = code.split("-");
+					int x = Integer.parseInt( codes[0] );
+					int y = Integer.parseInt( codes[1] );
+					
+					switch (x) {
+					case 404:
+						switch (y) {
+						case 3:
+							throw new DataDoesNotExistException( json.getString( "message" ) );
+						}
+					}
+				}
+			} catch (JSONException excep) {
+				
+			}
+			
 			switch (e.getStatusCode()) {
+			
 			case 404:
 				if (samplerate == null) {
 					throw new DataDoesNotExistException(startTime, endTime);

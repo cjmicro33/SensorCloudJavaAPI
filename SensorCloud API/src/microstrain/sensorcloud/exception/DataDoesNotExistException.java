@@ -30,4 +30,13 @@ public class DataDoesNotExistException extends InvalidRequestException {
 	public DataDoesNotExistException (long startTime, long endTime, SampleRate samplerate) {
 		super("No data exists between " + startTime + " and " + endTime + " at " + samplerate.toString());
 	}
+	
+	/**
+	 * Uses message from JSON HTTP error 
+	 * 
+	 * @param message  errorcode message
+	 */
+	public DataDoesNotExistException (String message) {
+		super( message );
+	}
 }

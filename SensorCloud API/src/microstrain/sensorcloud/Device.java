@@ -5,11 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 import microstrain.sensorcloud.exception.*;
+import microstrain.sensorcloud.json.JSONException;
+import microstrain.sensorcloud.json.JSONObject;
 import microstrain.sensorcloud.xdr.XDROutStream;
 
 /**
@@ -284,23 +283,25 @@ public class Device {
 	private InvalidRequestException parseException (SCHTTPException e, List <String> params) {
 		String message = e.getMessage();
 		
-		Pattern pattern = Pattern.compile( "\\d{3}-\\d{3}" );
-		Matcher m = pattern.matcher(message);
-		
-		if (m.find()) {
-			System.out.println(message);
-			String code = m.group();
-			String [] codes = code.split("-");
-			int x = Integer.parseInt( codes[0] );
-			int y = Integer.parseInt( codes[1] );
+		try {
+			JSONObject json = new JSONObject(message);
 			
-			switch (x) {
-			case 400:
-				switch (y) {
-				case 9:
-					return new SensorContainsChannelsException( params.get(0) );
+			if (json.has( "errorcode" )) {
+				String code = json.getString( "errorcode" );
+				String [] codes = code.split("-");
+				int x = Integer.parseInt( codes[0] );
+				int y = Integer.parseInt( codes[1] );
+				
+				switch (x) {
+				case 400:
+					switch (y) {
+					case 9:
+						return new SensorContainsChannelsException( params.get(0) );
+					}
 				}
 			}
+		} catch (JSONException excep) {
+			
 		}
 		
 		switch (e.getStatusCode()) {

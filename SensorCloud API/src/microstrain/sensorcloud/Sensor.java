@@ -18,8 +18,11 @@ import microstrain.sensorcloud.exception.InvalidNameException;
 import microstrain.sensorcloud.exception.InvalidRequestException;
 import microstrain.sensorcloud.exception.InvalidUserInputException;
 import microstrain.sensorcloud.exception.SCHTTPException;
+import microstrain.sensorcloud.exception.SensorContainsChannelsException;
 import microstrain.sensorcloud.exception.SensorDoesNotExistException;
 import microstrain.sensorcloud.exception.VersionNotSupportedException;
+import microstrain.sensorcloud.json.JSONException;
+import microstrain.sensorcloud.json.JSONObject;
 import microstrain.sensorcloud.xdr.XDRInStream;
 import microstrain.sensorcloud.xdr.XDROutStream;
 
@@ -436,14 +439,35 @@ public class Sensor {
 	 * Parses HTTP exceptions into specific <b>SensorCloudExceptions</b>.
 	 * 404 errors are parsed as a missing <b>Channel</b> since a missing time series will be ignored.
 	 * 
-	 * @param e  exception from an HTTP request
+	 * @param e  exception from an HTTP request 
 	 * @param params  objects to be passed into the exception constructor, e.g. name
 	 * @return SensorCloud exception
 	 */
 	private InvalidRequestException parseException (SCHTTPException e, List <String> params) {
+		String message = e.getMessage();
+		/*try {
+			JSONObject json = new JSONObject(message);
+			
+			if (json.has( "errorcode" )) {
+				String code = json.getString( "errorcode" );
+				String [] codes = code.split("-");
+				int x = Integer.parseInt( codes[0] );
+				int y = Integer.parseInt( codes[1] );
+				
+				switch (x) {
+				case 404:
+					switch (y) {
+					case 2:
+						return new ChannelDoesNotExistException( params.get(0) );
+					}
+				}
+			}
+		} catch (JSONException excep) {
+			
+		}*/
+		
 		switch (e.getStatusCode()) {
 		case 400:			
-			String message = e.getMessage();
 			if (message.contains( "attribute" )) {
 				return new AttributeAlreadyExistsException( params.get(0) );
 			} else if (message.contains( "Version" )) {
@@ -456,7 +480,7 @@ public class Sensor {
 			if (e.getMessage().contains( "attribute" )) {
 				return new AttributeNotFoundException( params.get(0) );
 			} else if ( e.getMessage().contains( "channel" )) {
-				return new ChannelDoesNotExistException( name );
+				//return new ChannelDoesNotExistException( name );
 			} else if ( e.getMessage().contains( "sensor" )) {
 				return new SensorDoesNotExistException(name);
 			}

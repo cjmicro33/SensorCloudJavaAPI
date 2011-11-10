@@ -21,6 +21,9 @@ public class SCHTTPException extends HTTPException {
 	public SCHTTPException(int statusCode, String message) {
 		super(statusCode);
 		this.message = message;
+		if (message.startsWith( "{" )) {
+			System.out.println( message );
+		}
 	}
 
 	public String getMessage() {
