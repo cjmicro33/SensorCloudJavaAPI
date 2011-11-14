@@ -13,6 +13,8 @@ import microstrain.sensorcloud.exception.ChannelHasNoAttributesException;
 import microstrain.sensorcloud.exception.InvalidRequestException;
 import microstrain.sensorcloud.exception.SCHTTPException;
 import microstrain.sensorcloud.exception.VersionNotSupportedException;
+import microstrain.sensorcloud.json.JSONException;
+import microstrain.sensorcloud.json.JSONObject;
 import microstrain.sensorcloud.xdr.XDRInStream;
 import microstrain.sensorcloud.xdr.XDROutStream;
 
@@ -266,19 +268,41 @@ public class Channel {
 	 * @return SensorCloud exception
 	 */
 	private InvalidRequestException parseException (SCHTTPException e, List <String> params) {
+		String message = e.getMessage().toLowerCase();
+		
+		try {
+			JSONObject json = new JSONObject(message);
+			
+			if (json.has( "errorcode" )) {
+				String code = json.getString( "errorcode" );
+				String [] codes = code.split("-");
+				int x = Integer.parseInt( codes[0] );
+				int y = Integer.parseInt( codes[1] );
+				
+				switch (x) {
+				case 404:
+					switch (y) {
+					case 2:
+						return new ChannelDoesNotExistException( params.get(0) );
+					}
+				}
+			}
+		} catch (JSONException excep) {
+			
+		}
+		
 		switch (e.getStatusCode()) {
 		case 400:
-			String message = e.getMessage();
 			if (message.contains( "attribute " )) {
 				return new AttributeAlreadyExistsException( params.get(0) );
-			} else if (message.contains( "Version" )) {
+			} else if (message.contains( "version" )) {
 				throw new VersionNotSupportedException("Please update your API");
 			}
 			break;
 		case 404:
-			if (e.getMessage().contains( "attribute" )) {
+			if (message.contains( "attribute" )) {
 				return new AttributeNotFoundException( params.get(0) );
-			} else if ( e.getMessage().contains( "channel" )) {
+			} else if ( message.contains( "channel" )) {
 				return new ChannelDoesNotExistException( name );
 			}
 		}

@@ -444,8 +444,8 @@ public class Sensor {
 	 * @return SensorCloud exception
 	 */
 	private InvalidRequestException parseException (SCHTTPException e, List <String> params) {
-		String message = e.getMessage();
-		/*try {
+		String message = e.getMessage().toLowerCase();
+		try {
 			JSONObject json = new JSONObject(message);
 			
 			if (json.has( "errorcode" )) {
@@ -464,7 +464,7 @@ public class Sensor {
 			}
 		} catch (JSONException excep) {
 			
-		}*/
+		}
 		
 		switch (e.getStatusCode()) {
 		case 400:			
@@ -477,11 +477,11 @@ public class Sensor {
 			}
 			break;
 		case 404:
-			if (e.getMessage().contains( "attribute" )) {
+			if (message.contains( "attribute" )) {
 				return new AttributeNotFoundException( params.get(0) );
-			} else if ( e.getMessage().contains( "channel" )) {
-				//return new ChannelDoesNotExistException( name );
-			} else if ( e.getMessage().contains( "sensor" )) {
+			} else if ( message.contains( "channel" )) {
+				return new ChannelDoesNotExistException( name );
+			} else if ( message.contains( "sensor" )) {
 				return new SensorDoesNotExistException(name);
 			}
 		}
